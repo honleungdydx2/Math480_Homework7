@@ -1,0 +1,148 @@
+\documentclass[11pt,letter]{article}
+\usepackage{latexsym}
+\usepackage{mathrsfs}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{multicol}
+\usepackage{enumerate}
+
+%numbering theorems
+\newtheorem{thm}{Theorem}
+\newtheorem{defi}[thm]{Definition}
+\newtheorem{axi}[thm]{Axiom}
+\newtheorem{prop}[thm]{Proposition}
+\newtheorem{rem}[thm]{Remark}
+\newtheorem{cor}[thm]{Corollary}
+\newtheorem{lem}[thm]{Lemma}
+\newtheorem{eg}[thm]{Example}
+\numberwithin{equation}{section}
+
+% defining new commands
+\newcommand{\dis}{\displaystyle}
+
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\Ba}{\mathbb{B}}
+\newcommand{\D}{\mathbb{D}}
+\newcommand{\Sp}{\mathbb{S}}
+\newcommand{\A}{\mathcal{A}}
+\newcommand{\B}{\mathcal{B}}
+\newcommand{\E}{\mathcal{E}}
+\newcommand{\W}{\mathcal{W}}
+\newcommand{\ve}{\varepsilon}
+\newcommand{\vp}{\varphi}
+\newcommand{\mc}{\mathcal}
+\newcommand{\ra}{\rightarrow}
+\newcommand{\wt}{\widetilde}
+\newcommand{\wh}{\widehat}
+\newcommand{\ul}{\underline}
+\newcommand{\ol}{\overline}
+\newcommand{\triq}{\triangleq}
+
+
+\begin{document}
+\title{Fermat-Toricelli Problem: SDP formulation}
+\author{Hon Leung Lee}
+\date{\today}
+\maketitle
+
+\section{Problem formulation}
+
+We describe here the idea of SDP formulation in \cite{NPS}. Our problem is to minimize 
+over $x\in \R^2$, $\dis F(x) = \sum_{j=1}^n \eta_j \|x-a_j\|$ where all $\eta_j$ is positive and $a_j \in \R^2$. 
+Let $x$ and $a_j$ have coordinates $(x,y)$ and $(a_j,b_j)$ respectively (some abuse of notation here).
+Then the objective function  becomes
+$$
+F(x,y) = \sum_{j=1}^ n \eta_j \sqrt{(x-a_j)^2 + (y- b_j)^2}.
+$$
+Let the minimization problem be $(\mathcal{P})$. \\
+
+Introduce slack variables $d_j = \sqrt{(x-a_j)^2 + (y- b_j)^2}$ for all $j$. Then 
+$d_j^2  = (x-a_j)^2 + (y- b_j)^2 $. One can use this to show that:
+
+\begin{thm}
+The problem $(\mathcal{P})$ is equivalent to the semidefinite program (SDP) $(\mathcal{P}_2)$:
+\begin{align*}
+& \text{minimize } F(x) = \sum_{j=1}^n \eta_j d_j \text{ subject to }
+\begin{bmatrix}
+d_j + x - a_j & y - b_j \\
+y - b_j & d_j - x + a_j
+\end{bmatrix}
+\succeq 0 \\
+&  \text{ for all }j = 1,\cdots,n
+\end{align*}
+(Here $A \succeq 0$ means the matrix $A$ is positive semidefinite; Notice 
+the decision variables of $(\mathcal{P}_2)$ are $d_1,\cdots,d_n,x,y$).
+\end{thm}
+
+
+\begin{proof}
+For each $j$ let $A_j = \begin{bmatrix}
+d_j + x - a_j & y - b_j \\
+y - b_j & d_j - x + a_j
+\end{bmatrix}$. If\\ $d_j = \sqrt{(x-a_j)^2 + (y-b_j)^2}$ then all principal minors of 
+$A_j$ are nonnegative:
+$d_j \geq |x-a_j|$ and $\dis \det (A)= d_j^2 - (x-a_j)^2 - (y-b_j)^2 = 0$. Thus $A_j\succeq 0$. So feasibility of ($\mathcal{P}$) implies 
+the feasibility of ($\mathcal{P}_2$), hence the minimum value in ($\mathcal{P}_2$) cannot exceed that of ($\mathcal{P}$). 
+On the other hand if  $A_j \succeq 0$, then all the eigenvalues of $A_j$ are nonnegative. By assessing the eigenvalues using quadratic formula one sees $d_j \geq \sqrt{(x-a_j)^2 + (y-b_j)^2} \geq$ the minimum value of $(\mathcal{P})$. 
+This completes the other direction that the minimum value of $(\mathcal{P})$ is at most that of $(\mathcal{P}_2)$, and 
+so the conclusion follows.
+\end{proof}
+
+The above SDP ($\mathcal{P}_2$) can be implemented using the SDP solver in \verb+cvxopt+ package in Python. 
+
+\section{Discussion}
+
+We already implemented the following baby example using the \verb+cvxopt+ package.
+
+\begin{eg}
+If $(a_0, b_0) =  (0,0)$, $(a_1,b_1) = (1,0)$ and $\dis (a_2,b_2) = \left( \frac{1}{2}, \frac{\sqrt{3}}{2} \right)$ then 
+the Fermat point has to be the centroid $\dis \left(\frac{1}{2}, \frac{1}{2\sqrt{3}}\right)$, whence the minimum distance is $\sqrt{3}$. 
+
+\end{eg}
+
+The solver provided more information which we are also interested. For the above example it takes 6 iterations. The CPU time is 6.73 ms per loop. Also the convergence looks superlinear. This is nice.
+
+\section{Next step}
+
+\begin{enumerate}
+\item
+Implement the SDP for general $n$ points in $\R^2$ and general weights. 
+\item
+Perform numerical experiments through simple sampling. Fix $n  = 5$ (or any nice integer). Generate 5 points in $\R^2$ using Gaussian distribution, and generate 500 such data. Run the algorithm and analyze the results. 
+\end{enumerate}
+
+
+
+\begin{thebibliography}{9999}
+
+
+
+\bibitem{NPS}
+{\sc Nie, J., Parrilo, P. A..Sturmfels, B. }: 
+{\it Semidefinite Representation of the k-Ellipse. In Algorithms in Algebraic Geometry}.
+Springer New York (2008),  117-132. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\end{thebibliography}
+
+
+
+\end{document} 
